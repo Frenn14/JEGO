@@ -29,7 +29,7 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 
     Future.microtask(() async {
       final auth = context.read<AuthNotifier>();
-      final uid = auth.user?.uid;
+      final uid = auth.uid;
       if (uid == null) return;
       await context.read<ProductUsageNotifier>().load(uid: uid, productNo: widget.productNo);
     });
@@ -45,7 +45,7 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
-    final uid = auth.user?.uid;
+    final uid = auth.uid;
 
     final usage = context.watch<ProductUsageNotifier>();
     final p = usage.product;
