@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-import 'core/config/firebase_config.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'app.dart';
+import 'core/config/firebase_config.dart';
+import 'core/providers/theme_provider.dart';
 
 // inventory imports
 import 'features/inventory/domain/usecases/search_products_usecase.dart';
@@ -31,87 +32,80 @@ import 'features/auth/domain/usecases/login_usecase.dart';
 import 'features/auth/domain/usecases/logout_usecase.dart';
 import 'features/auth/presentation/providers/auth_notifier.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ⚠️ 보안 주의:
+  // firebase_config.dart 는 Git에 올리지 말고(.gitignore) 템플릿(example)로 관리 권장
   await FirebaseConfig.initialize();
 
+  // Firebase singletons
   final firebaseAuth = FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;
 
-  // ✅ Auth: role(isAdmin)까지 읽어야 하므로 firestore 전달 가능한 구조로 맞추기
-  final remoteDataSource = AuthRemoteDataSource(
+  // ===== Auth DI =====
+  final authRemoteDataSource = AuthRemoteDataSource(
     firebaseAuth: firebaseAuth,
     firestore: firestore,
   );
-
-  final authRepository = AuthRepositoryImpl(remoteDataSource);
-
-  // inventory
-  final ds = InventoryFirestoreDataSource(firestore);
-  final repo = InventoryRepositoryImpl(ds);
-
-  // usecases
+  final authRepository = AuthRepositoryImpl(authRemoteDataSource);
   final loginUseCase = LoginUseCase(authRepository);
   final logoutUseCase = LogoutUseCase(authRepository);
 
-  final searchProducts = SearchProductsUseCase();
-  final getProducts = GetProductsUseCase(repo);
-  final getDetail = GetProductDetailUseCase(repo);
-  final createProduct = CreateProductUseCase(repo);
-  final updateProduct = UpdateProductUseCase(repo);
-  final deleteProductAndLogs = DeleteProductAndLogsUseCase(repo);
-  final checkout = CheckoutUseCase(repo);
-  final returnUc = ReturnUseCase(repo);
-  final getLogs = GetProductLogsUseCase(repo);
+  // ===== Inventory DI =====
+  final inventoryDs = InventoryFirestoreDataSource(firestore);
+  final inventoryRepo = InventoryRepositoryImpl(inventoryDs);
 
+  final searchProductsUseCase = SearchProductsUseCase();
+  final getProductsUseCase = GetProductsUseCase(inventoryRepo);
+  final getProductDetailUseCase = GetProductDetailUseCase(inventoryRepo);
+  final createProductUseCase = CreateProductUseCase(inventoryRepo);
+  final updateProductUseCase = UpdateProductUseCase(inventoryRepo);
+  final deleteProductAndLogsUseCase = DeleteProductAndLogsUseCase(inventoryRepo);
+  final checkoutUseCase = CheckoutUseCase(inventoryRepo);
+  final returnUseCase = ReturnUseCase(inventoryRepo);
+  final getProductLogsUseCase = GetProductLogsUseCase(inventoryRepo);
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider(),
         ),
-        ChangeNotifierProvider(
+
+        ChangeNotifierProvider<AuthNotifier>(
           create: (_) => AuthNotifier(
             loginUseCase: loginUseCase,
             logoutUseCase: logoutUseCase,
-          )..init(), // ✅ 앱 시작 시 role 로드
+          )..init(), // ✅ 앱 시작 시 로그인 상태/role 로드
         ),
-        ChangeNotifierProvider(
+
+        ChangeNotifierProvider<InventoryListNotifier>(
           create: (_) => InventoryListNotifier(
-            getProductsUseCase: getProducts,
-            searchProductsUseCase: searchProducts,
+            getProductsUseCase: getProductsUseCase,
+            searchProductsUseCase: searchProductsUseCase,
           ),
         ),
-        ChangeNotifierProvider(
+
+        ChangeNotifierProvider<ProductEditorNotifier>(
           create: (_) => ProductEditorNotifier(
-            getDetailUseCase: getDetail,
-            createProductUseCase: createProduct,
-            updateProductUseCase: updateProduct,
-            deleteProductAndLogsUseCase: deleteProductAndLogs,
+            getDetailUseCase: getProductDetailUseCase,
+            createProductUseCase: createProductUseCase,
+            updateProductUseCase: updateProductUseCase,
+            deleteProductAndLogsUseCase: deleteProductAndLogsUseCase,
           ),
         ),
-        ChangeNotifierProvider(
+
+        ChangeNotifierProvider<ProductUsageNotifier>(
           create: (_) => ProductUsageNotifier(
-            getDetailUseCase: getDetail,
-            getLogsUseCase: getLogs,
-            checkoutUseCase: checkout,
-            returnUseCase: returnUc,
+            getDetailUseCase: getProductDetailUseCase,
+            getLogsUseCase: getProductLogsUseCase,
+            checkoutUseCase: checkoutUseCase,
+            returnUseCase: returnUseCase,
           ),
         ),
       ],
-      child: const MyApp(),
+      child: const App(),
     ),
   );
-}
-
-class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
-  ThemeMode get themeMode => _themeMode;
-
-  void toggle() {
-    _themeMode =
-    _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-  }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/text_system.dart';
 import '../theme/spacing_system.dart';
-import '../../main.dart';
+import '../providers/theme_provider.dart'; // ✅ core 내부로
 
 class AppScaffold extends StatelessWidget {
   final String title;
