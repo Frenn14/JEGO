@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/color_system.dart';
 import '../theme/text_system.dart';
 import '../theme/spacing_system.dart';
 
@@ -7,12 +6,14 @@ class AppTextField extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final bool obscureText;
+  final TextInputType? keyboardType;
 
   const AppTextField({
     super.key,
     required this.hint,
     required this.controller,
     this.obscureText = false,
+    this.keyboardType,
   });
 
   @override
@@ -20,12 +21,10 @@ class AppTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      keyboardType: keyboardType,
       style: AppTextStyles.body,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: AppTextStyles.body.copyWith(
-          color: Colors.grey,
-        ),
         filled: true,
         fillColor: Theme.of(context).cardColor,
         contentPadding: const EdgeInsets.symmetric(

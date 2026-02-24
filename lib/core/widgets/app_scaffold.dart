@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../theme/color_system.dart';
 import '../theme/text_system.dart';
 import '../theme/spacing_system.dart';
 import '../../main.dart';

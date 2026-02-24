@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/color_system.dart';
 import '../theme/spacing_system.dart';
 
 class AppCard extends StatelessWidget {
