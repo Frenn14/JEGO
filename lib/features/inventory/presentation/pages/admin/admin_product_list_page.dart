@@ -78,8 +78,8 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
 
           // FAB
           Positioned(
-            right: 16,
-            bottom: 16,
+            right: AppSpacing.md,
+            bottom: AppSpacing.md,
             child: FloatingActionButton(
               onPressed: () async {
                 await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductCreatePage()));

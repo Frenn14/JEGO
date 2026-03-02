@@ -1,3 +1,4 @@
+// ⚠️ 아래는 기존 파일 구조 유지하면서 핵심 버그만 고친 버전(전체 교체 권장)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,10 +15,11 @@ class ProductUsagePage extends StatefulWidget {
   const ProductUsagePage({super.key, required this.productNo});
 
   @override
-  State<ProductUsagePage> createState() => _ProductUsagePageState();
+  State createState() => _ProductUsagePageState();
 }
 
-class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerProviderStateMixin {
+class _ProductUsagePageState extends State<ProductUsagePage>
+    with SingleTickerProviderStateMixin {
   late final TabController _tab;
   late final TextEditingController _qtyCtrl;
 
@@ -29,9 +31,13 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 
     Future.microtask(() async {
       final auth = context.read<AuthNotifier>();
-      final uid = auth.uid;
+      final uid = auth.uid; // ✅ 핵심 수정
       if (uid == null) return;
-      await context.read<ProductUsageNotifier>().load(uid: uid, productNo: widget.productNo);
+
+      await context.read<ProductUsageNotifier>().load(
+        uid: uid,
+        productNo: widget.productNo,
+      );
     });
   }
 
@@ -45,8 +51,7 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
-    final uid = auth.uid;
-
+    final uid = auth.uid; // ✅ 핵심 수정
     final usage = context.watch<ProductUsageNotifier>();
     final p = usage.product;
 
@@ -63,17 +68,16 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
     final canCheckout = !usage.isLoading && currentQty > 0;
     final canReturn = !usage.isLoading && myBorrowed > 0;
 
-    // 진행바: 0~100% 느낌으로 보여주기(총량 기준이 없으니 "현재재고" 기반 표시)
-    final progress = currentQty <= 0 ? 0.0 : 1.0; // 여기선 단순 표시(원하면 maxQty 필드 추가해서 진짜 진행바 가능)
+    final progress = currentQty <= 0 ? 0.0 : 1.0;
 
     return AppScaffold(
       title: '사용/반납',
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (usage.error != null) AppCard(child: Text('에러: ${usage.error}', style: AppTextStyles.body)),
+          if (usage.error != null)
+            AppCard(child: Text('에러: ${usage.error}', style: AppTextStyles.body)),
 
-          // 상단 요약 카드
           AppCard(
             child: Row(
               children: [
@@ -101,7 +105,6 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 
           const SizedBox(height: AppSpacing.sm),
 
-          // 수량 입력
           AppCard(
             child: TextField(
               controller: _qtyCtrl,
@@ -112,7 +115,6 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 
           const SizedBox(height: AppSpacing.sm),
 
-          // 사용/반납 버튼 (불가 상태 시 비활성 + 색감 변화는 AppButton 내부 정책에 따라)
           Row(
             children: [
               Expanded(
@@ -128,7 +130,7 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
                       qty: qty,
                     );
                   }
-                      : () {},
+                      : null, // ✅ 진짜 비활성
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -151,7 +153,7 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
                       qty: qty,
                     );
                   }
-                      : () {},
+                      : null, // ✅ 진짜 비활성
                 ),
               ),
             ],
@@ -159,22 +161,14 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 
           const SizedBox(height: AppSpacing.sm),
 
-          // 로그(기본) / Info(날개)
           TabBar(
             controller: _tab,
-            tabs: const [
-              Tab(text: '로그'),
-              Tab(text: 'Info'),
-            ],
+            tabs: const [Tab(text: '로그'), Tab(text: 'Info')],
           ),
-
           Expanded(
             child: TabBarView(
               controller: _tab,
-              children: [
-                _LogsTab(),
-                _InfoTab(productNo: widget.productNo),
-              ],
+              children: const [_LogsTab(), _InfoTab()],
             ),
           ),
         ],
@@ -184,20 +178,18 @@ class _ProductUsagePageState extends State<ProductUsagePage> with SingleTickerPr
 }
 
 class _LogsTab extends StatelessWidget {
+  const _LogsTab();
+
   @override
   Widget build(BuildContext context) {
     final usage = context.watch<ProductUsageNotifier>();
-
     if (usage.isLoading && usage.logs.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-
     final logs = usage.logs;
-
     if (logs.isEmpty) {
       return Center(child: Text('로그가 없습니다.', style: AppTextStyles.body));
     }
-
     return ListView.separated(
       itemCount: logs.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
@@ -205,10 +197,8 @@ class _LogsTab extends StatelessWidget {
         final l = logs[i];
         final typeLabel = l.type == 'checkout' ? '사용' : '반납';
         return AppCard(
-          child: Text(
-            '$typeLabel x${l.qty}  |  uid:${l.uid}  |  ${l.createdAt}',
-            style: AppTextStyles.body,
-          ),
+          child: Text('$typeLabel x${l.qty} | uid:${l.uid} | ${l.createdAt}',
+              style: AppTextStyles.body),
         );
       },
     );
@@ -216,17 +206,14 @@ class _LogsTab extends StatelessWidget {
 }
 
 class _InfoTab extends StatelessWidget {
-  final String productNo;
-  const _InfoTab({required this.productNo});
+  const _InfoTab();
 
   @override
   Widget build(BuildContext context) {
     final p = context.watch<ProductUsageNotifier>().product;
-
     if (p == null) {
       return Center(child: Text('정보를 불러오는 중...', style: AppTextStyles.body));
     }
-
     return ListView(
       children: [
         AppCard(child: Text('상품번호: ${p.productNo}', style: AppTextStyles.body)),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../providers/theme_provider.dart';
 import '../theme/text_system.dart';
 import '../theme/spacing_system.dart';
-import '../providers/theme_provider.dart'; // ✅ core 내부로
 
 class AppScaffold extends StatelessWidget {
   final String title;
@@ -25,14 +26,17 @@ class AppScaffold extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        title: Text(
-          title,
-          style: AppTextStyles.title,
-        ),
+
+        // Left: Logo
         leading: Padding(
           padding: const EdgeInsets.all(AppSpacing.sm),
           child: const FlutterLogo(),
         ),
+
+        // Center: Title
+        title: Text(title, style: AppTextStyles.title),
+
+        // Right: Theme toggle + extra actions
         actions: [
           IconButton(
             icon: Icon(
@@ -40,7 +44,7 @@ class AppScaffold extends StatelessWidget {
                   ? Icons.dark_mode
                   : Icons.light_mode,
             ),
-            onPressed: () => themeProvider.toggle(),
+            onPressed: themeProvider.toggle,
           ),
           if (actions != null) ...actions!,
         ],

@@ -5,5 +5,5 @@ class AppRoutes {
   static const auth = '/auth';
   static const dashboard = '/dashboard';
   static const inventory = '/inventory';
-  static const profile = '/profile';   // ✅ 이 줄 추가
+  static const profile = '/profile';
 }

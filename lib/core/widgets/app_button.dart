@@ -17,34 +17,32 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool enabled = onPressed != null;
+
     final button = ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor:
+        enabled ? AppColors.primary : Colors.grey.shade400,
         padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.md,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        elevation: 2,
+        elevation: enabled ? 2 : 0,
       ),
       onPressed: onPressed,
       child: Text(
         text,
         style: AppTextStyles.body.copyWith(
-          color: Colors.white,
+          color: enabled ? Colors.white : Colors.black54,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
 
-    if (isFullWidth) {
-      return SizedBox(
-        width: double.infinity,
-        child: button,
-      );
-    }
-
-    return button;
+    return isFullWidth
+        ? SizedBox(width: double.infinity, child: button)
+        : button;
   }
 }

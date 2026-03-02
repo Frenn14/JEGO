@@ -14,4 +14,9 @@ class AppColors {
 
   static const textPrimaryLight = Color(0xFF0F172A);
   static const textPrimaryDark = Colors.white;
+
+  static const Color border = Color(0xFFE0E0E0);
+
+  static const Color disabled = Color(0xFFBDBDBD);
+  static const Color textDisabled = Color(0xFF9E9E9E);
 }
