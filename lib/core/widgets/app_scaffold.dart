@@ -9,12 +9,14 @@ class AppScaffold extends StatelessWidget {
   final String title;
   final Widget body;
   final List<Widget>? actions;
+  final Widget? bottomNavigationBar;
 
   const AppScaffold({
     super.key,
     required this.title,
     required this.body,
     this.actions,
+    this.bottomNavigationBar,
   });
 
   @override
@@ -53,6 +55,7 @@ class AppScaffold extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: body,
       ),
+      bottomNavigationBar: bottomNavigationBar,
     );
   }
 }

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'app.dart';
+import 'myApp.dart';
 import 'core/config/firebase_config.dart';
 import 'core/providers/theme_provider.dart';
 
