@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/spacing_system.dart';
 import '../../../../core/theme/text_system.dart';
+import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_scaffold.dart';
@@ -47,6 +48,7 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }
 }

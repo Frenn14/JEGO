@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/routes.dart';
+import '../../../../core/widgets/app_bottom_nav.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -42,6 +43,7 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 }

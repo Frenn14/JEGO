@@ -105,7 +105,7 @@ Future<void> main() async {
           ),
         ),
       ],
-      child: const MyApp(),
+      child: const myApp(),
     ),
   );
 }

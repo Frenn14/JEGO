@@ -11,8 +11,8 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/inventory/presentation/pages/inventory_page.dart';
 import 'features/profile/presentation/pages/profile_page.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class myApp extends StatelessWidget {
+  const myApp({super.key});
 
   Route<dynamic> _onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
