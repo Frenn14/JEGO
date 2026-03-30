@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/product_entity.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/usecases/checkout_usecase.dart';
@@ -21,14 +22,12 @@ class ProductUsageNotifier extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
-
   ProductEntity? _product;
   List<TransactionEntity> _logs = [];
   int _myBorrowed = 0;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
-
   ProductEntity? get product => _product;
   List<TransactionEntity> get logs => _logs;
   int get myBorrowed => _myBorrowed;
@@ -40,9 +39,14 @@ class ProductUsageNotifier extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
+
     try {
-      _product = await getDetailUseCase(productNo);
-      _logs = await getLogsUseCase(productNo: productNo, limit: 50);
+      _product = await getDetailUseCase(productNo) as ProductEntity;
+      _logs = (await getLogsUseCase(
+        productNo: productNo,
+        limit: 50,
+      ))
+          .cast<TransactionEntity>();
       _myBorrowed = _calcMyBorrowed(uid, _logs);
     } catch (e) {
       _error = e.toString();
@@ -54,14 +58,16 @@ class ProductUsageNotifier extends ChangeNotifier {
 
   int _calcMyBorrowed(String uid, List<TransactionEntity> logs) {
     int outSum = 0;
-    int retSum = 0;
-    for (final l in logs) {
-      if (l.uid != uid) continue;
-      if (l.type == 'checkout') outSum += l.qty;
-      if (l.type == 'return') retSum += l.qty;
+    int returnSum = 0;
+
+    for (final log in logs) {
+      if (log.uid != uid) continue;
+      if (log.type == 'checkout') outSum += log.qty;
+      if (log.type == 'return') returnSum += log.qty;
     }
-    final v = outSum - retSum;
-    return v < 0 ? 0 : v;
+
+    final borrowed = outSum - returnSum;
+    return borrowed < 0 ? 0 : borrowed;
   }
 
   Future<void> checkout({
@@ -72,8 +78,13 @@ class ProductUsageNotifier extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
+
     try {
-      await checkoutUseCase(uid: uid, productNo: productNo, qty: qty);
+      await checkoutUseCase(
+        uid: uid,
+        productNo: productNo,
+        qty: qty,
+      );
       await load(uid: uid, productNo: productNo);
     } catch (e) {
       _error = e.toString();
@@ -90,8 +101,13 @@ class ProductUsageNotifier extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
+
     try {
-      await returnUseCase(uid: uid, productNo: productNo, qty: qty);
+      await returnUseCase(
+        uid: uid,
+        productNo: productNo,
+        qty: qty,
+      );
       await load(uid: uid, productNo: productNo);
     } catch (e) {
       _error = e.toString();

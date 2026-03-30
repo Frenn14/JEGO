@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 
@@ -11,33 +12,36 @@ class AuthNotifier extends ChangeNotifier {
     required this.logoutUseCase,
   });
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
-
-  String? _error;
-  String? get error => _error;
-
+  String? _uid;
   String _role = 'user';
+  bool _isLoading = false;
+  String? _error;
+
+  String? get uid => _uid;
   String get role => _role;
   bool get isAdmin => _role == 'admin';
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  String? _uid;
-  String? get uid => _uid;
-
-  get user => null;
-
-  /// ✅ 앱 시작 시 호출: 이미 로그인 상태면 role 가져오기
   Future<void> init() async {
-    try {
-      final currentUid = loginUseCase.currentUid();
-      _uid = currentUid;
-      if (currentUid != null) {
-        _role = await loginUseCase.fetchRole(currentUid);
-      }
-    } catch (_) {
-      _role = 'user';
-    }
+    final currentUid = loginUseCase.currentUid();
+    if (currentUid == null) return;
+
+    _isLoading = true;
+    _error = null;
     notifyListeners();
+
+    try {
+      _uid = currentUid;
+      _role = await loginUseCase.fetchRole(currentUid) as String;
+    } catch (e) {
+      _error = e.toString();
+      _uid = null;
+      _role = 'user';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loginWithEmail({
@@ -49,9 +53,16 @@ class AuthNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final uid = await loginUseCase(email: email, password: password);
-      _uid = uid;
-      _role = await loginUseCase.fetchRole(uid);
+      final result = await loginUseCase(
+        email: email,
+        password: password,
+      );
+      _uid = result as String?;
+      if (_uid != null) {
+        _role = await loginUseCase.fetchRole(_uid!) as String;
+      } else {
+        _role = 'user';
+      }
     } catch (e) {
       _error = e.toString();
       _uid = null;

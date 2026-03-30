@@ -12,7 +12,10 @@ class InventoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
 
-    if (auth.isAdmin) return const AdminProductListPage();
+    if (auth.isAdmin) {
+      return const AdminProductListPage();
+    }
+
     return const UserProductListPage();
   }
 }

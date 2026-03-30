@@ -24,11 +24,20 @@ class _UserProductListPageState extends State<UserProductListPage> {
   void initState() {
     super.initState();
     _search = TextEditingController();
-    Future.microtask(() => context.read<InventoryListNotifier>().load());
+    _search.addListener(_onSearchChanged);
+
+    Future.microtask(() {
+      context.read<InventoryListNotifier>().load();
+    });
+  }
+
+  void _onSearchChanged() {
+    context.read<InventoryListNotifier>().setQuery(_search.text);
   }
 
   @override
   void dispose() {
+    _search.removeListener(_onSearchChanged);
     _search.dispose();
     super.dispose();
   }
@@ -39,6 +48,7 @@ class _UserProductListPageState extends State<UserProductListPage> {
 
     return AppScaffold(
       title: '제품 목록',
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -47,25 +57,45 @@ class _UserProductListPageState extends State<UserProductListPage> {
             controller: _search,
           ),
           const SizedBox(height: AppSpacing.sm),
-          if (list.error != null) AppCard(child: Text('에러: ${list.error}', style: AppTextStyles.body)),
+          if (list.error != null)
+            AppCard(
+              child: Text(
+                '에러: ${list.error}',
+                style: AppTextStyles.body,
+              ),
+            ),
           const SizedBox(height: AppSpacing.sm),
           Expanded(
             child: list.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : ListView.separated(
               itemCount: list.items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, i) {
-                final p = list.items[i];
+              separatorBuilder: (_, __) =>
+              const SizedBox(height: AppSpacing.sm),
+              itemBuilder: (context, index) {
+                final product = list.items[index];
+
                 return AppCard(
                   child: ListTile(
-                    title: Text(p.name, style: AppTextStyles.body),
-                    subtitle: Text('상품번호: ${p.productNo} / 현재 재고: ${p.totalQty}', style: AppTextStyles.body),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => ProductUsagePage(productNo: p.productNo)),
+                    title: Text(
+                      product.name,
+                      style: AppTextStyles.body,
                     ),
+                    subtitle: Text(
+                      '상품번호: ${product.productNo} / 현재 재고: ${product.totalQty}',
+                      style: AppTextStyles.body,
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProductUsagePage(
+                            productNo: product.productNo,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
@@ -73,15 +103,6 @@ class _UserProductListPageState extends State<UserProductListPage> {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _search.addListener(() {
-      context.read<InventoryListNotifier>().setQuery(_search.text);
-    });
   }
 }
