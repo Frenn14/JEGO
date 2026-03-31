@@ -1,5 +1,5 @@
 class ProductEntity {
-  final String productNo;
+  final String productNo; // docId
   final String name;
   final List<String> aliases;
   final String? imageUrl;

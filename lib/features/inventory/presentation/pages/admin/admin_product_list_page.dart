@@ -25,20 +25,11 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
   void initState() {
     super.initState();
     _search = TextEditingController();
-    _search.addListener(_onSearchChanged);
-
-    Future.microtask(() {
-      context.read<InventoryListNotifier>().load();
-    });
-  }
-
-  void _onSearchChanged() {
-    context.read<InventoryListNotifier>().setQuery(_search.text);
+    Future.microtask(() => context.read<InventoryListNotifier>().load());
   }
 
   @override
   void dispose() {
-    _search.removeListener(_onSearchChanged);
     _search.dispose();
     super.dispose();
   }
@@ -49,7 +40,6 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
 
     return AppScaffold(
       title: '관리자: 제품 목록',
-      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
       body: Stack(
         children: [
           Column(
@@ -60,45 +50,25 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
                 controller: _search,
               ),
               const SizedBox(height: AppSpacing.sm),
-              if (list.error != null)
-                AppCard(
-                  child: Text(
-                    '에러: ${list.error}',
-                    style: AppTextStyles.body,
-                  ),
-                ),
+              if (list.error != null) AppCard(child: Text('에러: ${list.error}', style: AppTextStyles.body)),
               const SizedBox(height: AppSpacing.sm),
               Expanded(
                 child: list.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ListView.separated(
                   itemCount: list.items.length,
-                  separatorBuilder: (_, __) =>
-                  const SizedBox(height: AppSpacing.sm),
-                  itemBuilder: (context, index) {
-                    final product = list.items[index];
-
+                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                  itemBuilder: (context, i) {
+                    final p = list.items[i];
                     return AppCard(
                       child: ListTile(
-                        title: Text(
-                          product.name,
-                          style: AppTextStyles.body,
-                        ),
-                        subtitle: Text(
-                          '상품번호: ${product.productNo} / 수량: ${product.totalQty}',
-                          style: AppTextStyles.body,
-                        ),
+                        title: Text(p.name, style: AppTextStyles.body),
+                        subtitle: Text('상품번호: ${p.productNo} / 수량: ${p.totalQty}', style: AppTextStyles.body),
                         trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AdminProductEditPage(
-                                productNo: product.productNo,
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => AdminProductEditPage(productNo: p.productNo)),
+                        ),
                       ),
                     );
                   },
@@ -106,26 +76,30 @@ class _AdminProductListPageState extends State<AdminProductListPage> {
               ),
             ],
           ),
+
+          // FAB
           Positioned(
             right: AppSpacing.md,
             bottom: AppSpacing.md,
             child: FloatingActionButton(
               onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AdminProductCreatePage(),
-                  ),
-                );
-
-                if (!mounted) return;
-                await context.read<InventoryListNotifier>().load();
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProductCreatePage()));
+                if (context.mounted) context.read<InventoryListNotifier>().load();
               },
               child: const Icon(Icons.add),
             ),
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _search.addListener(() {
+      context.read<InventoryListNotifier>().setQuery(_search.text);
+    });
   }
 }

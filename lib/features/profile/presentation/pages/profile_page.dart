@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/routes.dart';
 import '../../../../core/theme/spacing_system.dart';
 import '../../../../core/theme/text_system.dart';
 import '../../../../core/widgets/app_bottom_nav.dart';
@@ -19,7 +18,6 @@ class ProfilePage extends StatelessWidget {
 
     return AppScaffold(
       title: '프로필',
-      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -45,15 +43,12 @@ class ProfilePage extends StatelessWidget {
                 : () async {
               await context.read<AuthNotifier>().logout();
               if (!context.mounted) return;
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppRoutes.auth,
-                    (_) => false,
-              );
+              Navigator.pushNamedAndRemoveUntil(context, '/auth', (_) => false);
             },
           ),
         ],
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }
 }

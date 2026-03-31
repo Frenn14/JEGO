@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/config/routes.dart';
-import '../../../../core/theme/spacing_system.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 import '../../../../core/widgets/app_textfield.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/theme/spacing_system.dart';
 import '../providers/auth_notifier.dart';
+import '../../../../core/config/routes.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -39,31 +39,26 @@ class _AuthPageState extends State<AuthPage> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이메일과 비밀번호를 입력해 주세요.'),
-        ),
+        const SnackBar(content: Text('이메일/비밀번호를 입력해 주세요.')),
       );
       return;
     }
 
     final auth = context.read<AuthNotifier>();
-    await auth.loginWithEmail(
-      email: email,
-      password: password,
-    );
+    await auth.loginWithEmail(email: email, password: password);
 
     if (!mounted) return;
 
     if (auth.uid != null) {
+      // 로그인 성공 → 대시보드로 이동 (거기서 Inventory로 들어가면 admin/user 분기됨)
       Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
-      return;
+    } else {
+      // 실패 → 에러 표시
+      final msg = auth.error ?? '로그인에 실패했습니다.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg)),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(auth.error ?? '로그인에 실패했습니다.'),
-      ),
-    );
   }
 
   @override
@@ -73,7 +68,6 @@ class _AuthPageState extends State<AuthPage> {
     return AppScaffold(
       title: 'Login',
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppTextField(
             hint: 'ID',
@@ -88,11 +82,7 @@ class _AuthPageState extends State<AuthPage> {
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             text: auth.isLoading ? '로그인 중...' : 'Login',
-            onPressed: auth.isLoading
-                ? null
-                : () async {
-              await _login();
-            },
+            onPressed: auth.isLoading ? null : _login,
           ),
         ],
       ),

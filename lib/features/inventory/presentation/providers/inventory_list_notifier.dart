@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/entities/product_entity.dart';
 import '../../domain/usecases/get_products_usecase.dart';
 import '../../domain/usecases/search_products_usecase.dart';
@@ -15,6 +14,7 @@ class InventoryListNotifier extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
+
   List<ProductEntity> _all = [];
   List<ProductEntity> _items = [];
   String _query = '';
@@ -30,11 +30,8 @@ class InventoryListNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _all = await getProductsUseCase() as List<ProductEntity>;
-      _items = searchProductsUseCase(
-        source: _all,
-        query: _query,
-      ).cast<ProductEntity>();
+      _all = await getProductsUseCase();
+      _items = searchProductsUseCase(source: _all, query: _query);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -43,12 +40,9 @@ class InventoryListNotifier extends ChangeNotifier {
     }
   }
 
-  void setQuery(String query) {
-    _query = query;
-    _items = searchProductsUseCase(
-      source: _all,
-      query: _query,
-    ).cast<ProductEntity>();
+  void setQuery(String q) {
+    _query = q;
+    _items = searchProductsUseCase(source: _all, query: _query);
     notifyListeners();
   }
 }

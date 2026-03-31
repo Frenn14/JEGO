@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../config/routes.dart';
 
 class AppBottomNav extends StatelessWidget {
@@ -28,6 +27,8 @@ class AppBottomNav extends StatelessWidget {
     }
 
     final currentRoute = ModalRoute.of(context)?.settings.name;
+
+    // 같은 페이지면 이동 안함
     if (currentRoute == target) return;
 
     Navigator.pushReplacementNamed(context, target);
@@ -37,7 +38,7 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: (index) => _go(context, index),
+      onTap: (i) => _go(context, i),
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
